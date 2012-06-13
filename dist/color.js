@@ -1,4 +1,4 @@
-/*! Color.js - v0.8.0 - 2012-06-08
+/*! Color.js - v0.8.1 - 2012-06-13
 * https://github.com/Automattic/Color.js
 * Copyright (c) 2012 Matt Wiebe; Licensed GPL v2 */
 
@@ -93,6 +93,35 @@
 				}
 			}
 			return '#' + hex;
+		},
+
+		toCSS: function( type, alpha ) {
+			type = type || 'hex';
+			alpha = parseFloat( alpha || 1 );
+			switch ( type ) {
+				case 'rgb':
+				case 'rgba':
+					var rgb = this.toRgb();
+					if ( alpha < 1 ) {
+						return "rgba( " + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ", " + alpha + " )";
+					}
+					else {
+						return "rgb( " + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + " )";
+					}
+					break;
+				case 'hsl':
+				case 'hsla':
+					var hsl = this.toHsl();
+					if ( alpha < 1 ) {
+						return "hsla( " + hsl[0] + ", " + hsl[1] + ", " + hsl[2] + ", " + alpha + " )";
+					}
+					else {
+						return "hsl( " + hsl[0] + ", " + hsl[1] + ", " + hsl[2] + " )";
+					}
+					break;
+				default:
+					return this.toString();
+			}
 		},
 
 		toRgb: function() {
