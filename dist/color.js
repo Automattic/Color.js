@@ -1,4 +1,4 @@
-/*! Color.js - v0.8.1 - 2012-06-13
+/*! Color.js - v0.8.1 - 2012-06-14
 * https://github.com/Automattic/Color.js
 * Copyright (c) 2012 Matt Wiebe; Licensed GPL v2 */
 
@@ -11,6 +11,7 @@
 
 	Color.prototype = {
 		_color: 0,
+		_alpha: 1,
 
 		_init: function( color, type ) {
 			if ( ! color ) {
@@ -24,10 +25,32 @@
 					return this.fromRgb( color[0], color[1], color[2] );
 				case 'hsl':
 					return this.fromHsl( color[0], color[1], color[2] );
+				case 'css':
+					return this.fromCSS( color );
 				case 'int':
 					return this.fromInt( color );
 			}
 			return this;
+		},
+
+		fromCSS: function( color ) {
+			var nums, list;
+			if ( color.match(/^(rgb|hsl)a?/) ) {
+				list = color.replace(/(\s|%)/g, '').replace(/^(rgb|hsl)a?\(/, '').replace(/\);?$/, '').split(',');
+				if ( list.length === 4 ) {
+					this._alpha = parseFloat( list.pop() );
+				}
+				if ( color.match(/^rgb/) ) {
+					return this.fromRgb( parseInt(list[0], 10), parseInt(list[1], 10), parseInt(list[2], 10) );
+				}
+				else {
+					return this.fromHsl( parseInt(list[0], 10), parseInt(list[1], 10), parseInt(list[2], 10) );
+				}
+			}
+			else {
+				// must be hex amirite?
+				return this.fromHex( color );
+			}
 		},
 
 		fromRgb: function( r, g, b ) {
@@ -97,7 +120,7 @@
 
 		toCSS: function( type, alpha ) {
 			type = type || 'hex';
-			alpha = parseFloat( alpha || 1 );
+			alpha = parseFloat( alpha || this._alpha );
 			switch ( type ) {
 				case 'rgb':
 				case 'rgba':
@@ -164,6 +187,16 @@
 
 		toInt: function() {
 			return this._color;
+		},
+
+		toIEOctoHex: function() {
+			// AARRBBGG
+			var hex = this.toString();
+			var AA = parseInt( 255 * this._alpha, 10 ).toString(16);
+			if ( AA.length === 1 ) {
+				AA = '0' + AA;
+			}
+			return '#' + AA + hex.replace(/^#/, '' );
 		},
 
 		toLuminosity: function() {
