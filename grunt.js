@@ -11,14 +11,14 @@ module.exports = function(grunt) {
         'Matt Wiebe; Licensed GPL v2 */'
     },
     lint: {
-      files: ['grunt.js', 'lib/**/*.js']//, 'test/**/*.js']
+      files: ['grunt.js', 'src/**/*.js']//, 'test/**/*.js']
     },
     test: {
       files: ['test/**/*.js']
     },
     concat: {
       dist: {
-        src: ['<banner:meta.banner>', '<file_strip_banner:lib/color.js>'],
+        src: ['<banner:meta.banner>', '<file_strip_banner:src/color.js>'],
         dest: 'dist/color.js'
       }
     },

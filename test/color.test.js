@@ -13,7 +13,7 @@ Array.prototype.compareArrays = function(arr) {
 
 module.exports = {
 	setUp: function (callback) {
-		Color = require( '../lib/color.js' ).Color;
+		Color = require( '../src/color.js' ).Color;
 		callback();
 	},
 	tearDown: function (callback) {
