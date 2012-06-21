@@ -15,8 +15,8 @@
 					case 'object':
 						// alpha?
 						this._alpha = color.a || 1;
-						func = color.r ? 'fromRgb' :
-							color.l ? 'fromHsl' : func;
+						func = ( color.r !== undef ) ? 'fromRgb' :
+							( color.l !== undef ) ? 'fromHsl' : func;
 						return this[func]( color );
 					case 'string':
 						return this.fromCSS( color );
