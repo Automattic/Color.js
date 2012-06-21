@@ -3,7 +3,7 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
     meta: {
-      version: '0.8.1',
+      version: '0.8.2',
       banner: '/*! Color.js - v<%= meta.version %> - ' +
         '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
         '* https://github.com/Automattic/Color.js\n' +
@@ -43,7 +43,8 @@ module.exports = function(grunt) {
         sub: true,
         undef: true,
         boss: true,
-        eqnull: true
+        eqnull: true,
+        loopfunc: true
       },
       globals: {
         exports: true,

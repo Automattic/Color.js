@@ -6,7 +6,7 @@ Array.prototype.compareArrays = function(arr) {
 			if (!this[i].compareArrays(arr[i])) return false;
 			else continue;
 		}
-		if (this[i] != arr[i]) return false;
+		if (this[i] !== arr[i]) return false;
 	}
 	return true;
 }
@@ -21,7 +21,6 @@ module.exports = {
 		callback();
 	},
 	fromHex: function( test ) {
-		var color = new Color();
 		var hexPairs = {
 			'000000': 0,
 			'a0a0a0': 10526880,
@@ -32,12 +31,11 @@ module.exports = {
 		};
 
 		for ( var hex in hexPairs ) {
-			test.equals( hexPairs[hex], color.fromHex(hex).toInt() );
+			test.equals( hexPairs[hex], new Color( hex ).toInt() );
 		}
 		test.done();
 	},
 	fromRgb: function( test ) {
-		var color = new Color();
 		var rgbPairs = {
 			0: [ 0, 0, 0 ],
 			1: [ 0, 0, 1 ],
@@ -54,8 +52,11 @@ module.exports = {
 
 		for ( var int in rgbPairs ) {
 			rgb = rgbPairs[int];
-			desc = 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
-			test.equals( int, color.fromRgb( rgb[0], rgb[1], rgb[2] ).toInt(), desc );
+			rgb = { r: rgb[0], g: rgb[1], b: rgb[2] };
+			desc = 'rgb(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ')';
+
+			test.equals( int, new Color( rgb ).toInt(), "from object: " + desc );
+			test.equals( int, new Color( desc ).toInt(), "from string: " + desc );
 		}
 		test.done();
 	},
