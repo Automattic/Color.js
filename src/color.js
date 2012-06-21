@@ -1,4 +1,5 @@
 (function(exports) {
+(function(exports, undef) {
 
 	var Color = function( color, type ) {
 		this._init( color, type );
@@ -25,7 +26,24 @@
 					return this.fromCSS( color );
 				case 'int':
 					return this.fromInt( color );
+		_init: function( color ) {
+			var func = 'noop';
+			switch ( typeof color ) {
+					case 'object':
+						// alpha?
+						this._alpha = color.a || 1;
+						func = color.r ? 'fromRgb' :
+							color.l ? 'fromHsl' : func;
+						return this[func]( color );
+					case 'string':
+						return this.fromCSS( color );
+					case 'number':
+						return this.fromInt( parseInt( color, 10 ) );
 			}
+			return this;
+		},
+
+		noop: function() {
 			return this;
 		},
 
