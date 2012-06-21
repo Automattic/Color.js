@@ -1,4 +1,3 @@
-(function(exports) {
 (function(exports, undef) {
 
 	var Color = function( color, type ) {
@@ -10,22 +9,6 @@
 		_color: 0,
 		_alpha: 1,
 
-		_init: function( color, type ) {
-			if ( ! color ) {
-				return this;
-			}
-			type = type || 'hex';
-			switch ( type ) {
-				case 'hex':
-					return this.fromHex( color );
-				case 'rgb':
-					return this.fromRgb( color[0], color[1], color[2] );
-				case 'hsl':
-					return this.fromHsl( color[0], color[1], color[2] );
-				case 'css':
-					return this.fromCSS( color );
-				case 'int':
-					return this.fromInt( color );
 		_init: function( color ) {
 			var func = 'noop';
 			switch ( typeof color ) {
@@ -55,7 +38,11 @@
 					this._alpha = parseFloat( list.pop() );
 				}
 				if ( color.match(/^rgb/) ) {
-					return this.fromRgb( parseInt(list[0], 10), parseInt(list[1], 10), parseInt(list[2], 10) );
+					return this.fromRgb( {
+						r: parseInt(list[0], 10),
+						g: parseInt(list[1], 10),
+						b: parseInt(list[2], 10)
+					} );
 				}
 				else {
 					return this.fromHsl( parseInt(list[0], 10), parseInt(list[1], 10), parseInt(list[2], 10) );
@@ -67,8 +54,8 @@
 			}
 		},
 
-		fromRgb: function( r, g, b ) {
-			this._color = parseInt( ( ( r << 16 ) + ( g << 8 ) + b ), 10 );
+		fromRgb: function( rgb ) {
+			this._color = parseInt( ( ( rgb.r << 16 ) + ( rgb.g << 8 ) + rgb.b ), 10 );
 			return this;
 		},
 
@@ -81,9 +68,9 @@
 			return this;
 		},
 
-		fromHsl: function( h, s, l ) {
-			var r, g, b, q, p;
-			h /= 360; s /= 100; l /= 100;
+		fromHsl: function( hsl ) {
+			var r, g, b, q, p, h, s, l;
+			h = hsl.h / 360; s = hsl.s / 100; l = hsl.l / 100;
 			if ( s === 0 ) {
 				r = g = b = l; // achromatic
 			}
@@ -94,7 +81,11 @@
 				g = this.hue2rgb( p, q, h );
 				b = this.hue2rgb( p, q, h - 1/3 );
 			}
-			return this.fromRgb( r * 255, g * 255, b * 255 );
+			return this.fromRgb( {
+				r: r * 255,
+				g: g * 255,
+				b: b * 255
+			} );
 		},
 
 		fromInt: function( int ) {
@@ -150,10 +141,10 @@
 				case 'hsla':
 					var hsl = this.toHsl();
 					if ( alpha < 1 ) {
-						return "hsla( " + hsl[0] + ", " + hsl[1] + ", " + hsl[2] + ", " + alpha + " )";
+						return "hsla( " + hsl.h + ", " + hsl.s + ", " + hsl.l + ", " + alpha + " )";
 					}
 					else {
-						return "hsl( " + hsl[0] + ", " + hsl[1] + ", " + hsl[2] + " )";
+						return "hsl( " + hsl.h + ", " + hsl.s + ", " + hsl.l + " )";
 					}
 					break;
 				default:
@@ -191,12 +182,11 @@
 				}
 				h /= 6;
 			}
-
-			return [
-				Math.round( h * 360 ),
-				Math.round( s * 100 ),
-				Math.round( l * 100 )
-			];
+			return {
+				h: Math.round( h * 360 ),
+				s: Math.round( s * 100 ),
+				l: Math.round( l * 100 )
+			};
 		},
 
 		toInt: function() {
@@ -263,6 +253,29 @@
 			return color;
 		},
 
+		// GET / SET - to be moved into generative functions
+		h: function( val ) {
+			return this._hsl( 'h', val );
+		},
+		s: function( val ) {
+			return this._hsl( 's', val );
+		},
+		l: function( val ) {
+			return this._hsl( 'l', val );
+		},
+		_hsl: function( key, val ) {
+			var hsl = this.toHsl();
+			if ( val === undef ) {
+				return hsl[key];
+			}
+			if ( key === 'h' ) { // hue gets modded
+				hsl[key] = val % 360;
+			} else { // s & l get range'd
+				hsl[key] = ( val < 0 ) ? 0 : ( val > 100 ) ? 100 : val;
+			}
+			return this.fromHsl( hsl );
+		},
+
 		// TRANSFORMS
 
 		darken: function( amount ) {
@@ -276,17 +289,7 @@
 		},
 
 		incrementLightness: function( amount ) {
-			var hsl = this.toHsl();
-			hsl[2] += amount;
-
-			if ( hsl[2] < 0 ) {
-				hsl[2] = 0;
-			}
-			if ( hsl[2] > 100 ) {
-				hsl[2] = 100;
-			}
-
-			return this.fromHsl( hsl[0], hsl[1], hsl[2] );
+			return this.l( this.l() + amount );
 		},
 
 		saturate: function( amount ) {
@@ -300,23 +303,11 @@
 		},
 
 		incrementSaturation: function( amount ) {
-			var hsl = this.toHsl();
-			hsl[0] += amount;
-
-			if ( hsl[0] < 0 ) {
-				hsl[0] = 0;
-			}
-			if ( hsl[0] > 100 ) {
-				hsl[0] = 100;
-			}
-
-			return this.fromHsl( hsl[0], hsl[1], hsl[2] );
+			return this.s( this.s() + amount );
 		},
 
 		toGrayscale: function() {
-			var hsl = this.toHsl();
-			hsl[1] = 0;
-			return this.fromHsl( hsl[0], hsl[1], hsl[2] );
+			return this.h( 0 );
 		},
 
 		getComplement: function() {
@@ -348,12 +339,11 @@
 		},
 
 		incrementHue: function( amount ) {
-			var hsl = this.toHsl();
-			hsl[0] = ( hsl[0] + amount ) % 360;
-			return this.fromHsl( hsl[0], hsl[1], hsl[2] );
+			return this.h( this.h() + amount );
 		}
 
 	};
+
 	exports.Color = Color;
 
 }(typeof exports === 'object' && exports || this));
