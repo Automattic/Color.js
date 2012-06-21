@@ -45,7 +45,11 @@
 					} );
 				}
 				else {
-					return this.fromHsl( parseInt(list[0], 10), parseInt(list[1], 10), parseInt(list[2], 10) );
+					return this.fromHsl( {
+						h: parseInt(list[0], 10),
+						s: parseInt(list[1], 10),
+						l: parseInt(list[2], 10)
+					} );
 				}
 			}
 			else {
@@ -55,8 +59,7 @@
 		},
 
 		fromRgb: function( rgb ) {
-			this._color = parseInt( ( ( rgb.r << 16 ) + ( rgb.g << 8 ) + rgb.b ), 10 );
-			return this;
+			return this.fromInt( parseInt( ( ( rgb.r << 16 ) + ( rgb.g << 8 ) + rgb.b ), 10 ) );
 		},
 
 		fromHex: function( color ) {
@@ -90,6 +93,7 @@
 
 		fromInt: function( int ) {
 			this._color = parseInt( int, 10 );
+			// EVENT GOES HERE
 			return this;
 		},
 
@@ -131,10 +135,10 @@
 				case 'rgba':
 					var rgb = this.toRgb();
 					if ( alpha < 1 ) {
-						return "rgba( " + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ", " + alpha + " )";
+						return "rgba( " + rgb.r + ", " + rgb.g + ", " + rgb.b + ", " + alpha + " )";
 					}
 					else {
-						return "rgb( " + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + " )";
+						return "rgb( " + rgb.r + ", " + rgb.g + ", " + rgb.b + " )";
 					}
 					break;
 				case 'hsl':
@@ -153,16 +157,16 @@
 		},
 
 		toRgb: function() {
-			return [
-				255 & ( this._color >> 16 ),
-				255 & ( this._color >> 8 ),
-				255 & ( this._color )
-			];
+			return {
+				r: 255 & ( this._color >> 16 ),
+				g: 255 & ( this._color >> 8 ),
+				b: 255 & ( this._color )
+			};
 		},
 
 		toHsl: function() {
 			var rgb = this.toRgb();
-			var r = rgb[0] / 255, g = rgb[1] / 255, b = rgb[2] / 255;
+			var r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255;
 			var max = Math.max( r, g, b ), min = Math.min( r, g, b );
 			var h, s, l = ( max + min ) / 2;
 
@@ -205,7 +209,7 @@
 
 		toLuminosity: function() {
 			var rgb = this.toRgb();
-			return 0.2126 * Math.pow( rgb[0] / 255, 2.2 ) + 0.7152 * Math.pow( rgb[1] / 255, 2.2 ) + 0.0722 * Math.pow( rgb[2] / 255, 2.2);
+			return 0.2126 * Math.pow( rgb.r / 255, 2.2 ) + 0.7152 * Math.pow( rgb.g / 255, 2.2 ) + 0.0722 * Math.pow( rgb.b / 255, 2.2);
 		},
 
 		getDistanceLuminosityFrom: function( color ) {
