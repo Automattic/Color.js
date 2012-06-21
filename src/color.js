@@ -59,12 +59,12 @@
 		},
 
 		fromRgb: function( rgb ) {
-			return this.fromInt( parseInt( ( ( rgb.r << 16 ) + ( rgb.g << 8 ) + rgb.b ), 10 ) );
+			return this.fromInt( parseInt( ( rgb.r << 16 ) + ( rgb.g << 8 ) + rgb.b, 10 ) );
 		},
 
 		fromHex: function( color ) {
 			color = color.replace(/^#/, '');
-			if ( color.length === 3 )
+			if ( color.length === 3 ) {
 				color = color[0] + color[0] + color[1] + color[1] + color[2] + color[2];
 			}
 			return this.fromInt( parseInt( color, 16 ) );
