@@ -1,8 +1,8 @@
-/*! Color.js - v0.8.1 - 2012-06-14
+/*! Color.js - v0.8.2 - 2012-06-21
 * https://github.com/Automattic/Color.js
 * Copyright (c) 2012 Matt Wiebe; Licensed GPL v2 */
 
-(function(exports) {
+(function(exports, undef) {
 
 	var Color = function( color, type ) {
 		this._init( color, type );
@@ -13,23 +13,24 @@
 		_color: 0,
 		_alpha: 1,
 
-		_init: function( color, type ) {
-			if ( ! color ) {
-				return this;
+		_init: function( color ) {
+			var func = 'noop';
+			switch ( typeof color ) {
+					case 'object':
+						// alpha?
+						this._alpha = color.a || 1;
+						func = ( color.r !== undef ) ? 'fromRgb' :
+							( color.l !== undef ) ? 'fromHsl' : func;
+						return this[func]( color );
+					case 'string':
+						return this.fromCSS( color );
+					case 'number':
+						return this.fromInt( parseInt( color, 10 ) );
 			}
-			type = type || 'hex';
-			switch ( type ) {
-				case 'hex':
-					return this.fromHex( color );
-				case 'rgb':
-					return this.fromRgb( color[0], color[1], color[2] );
-				case 'hsl':
-					return this.fromHsl( color[0], color[1], color[2] );
-				case 'css':
-					return this.fromCSS( color );
-				case 'int':
-					return this.fromInt( color );
-			}
+			return this;
+		},
+
+		noop: function() {
 			return this;
 		},
 
@@ -41,10 +42,18 @@
 					this._alpha = parseFloat( list.pop() );
 				}
 				if ( color.match(/^rgb/) ) {
-					return this.fromRgb( parseInt(list[0], 10), parseInt(list[1], 10), parseInt(list[2], 10) );
+					return this.fromRgb( {
+						r: parseInt(list[0], 10),
+						g: parseInt(list[1], 10),
+						b: parseInt(list[2], 10)
+					} );
 				}
 				else {
-					return this.fromHsl( parseInt(list[0], 10), parseInt(list[1], 10), parseInt(list[2], 10) );
+					return this.fromHsl( {
+						h: parseInt(list[0], 10),
+						s: parseInt(list[1], 10),
+						l: parseInt(list[2], 10)
+					} );
 				}
 			}
 			else {
@@ -53,9 +62,8 @@
 			}
 		},
 
-		fromRgb: function( r, g, b ) {
-			this._color = parseInt( ( ( r << 16 ) + ( g << 8 ) + b ), 10 );
-			return this;
+		fromRgb: function( rgb ) {
+			return this.fromInt( parseInt( ( rgb.r << 16 ) + ( rgb.g << 8 ) + rgb.b, 10 ) );
 		},
 
 		fromHex: function( color ) {
@@ -63,13 +71,12 @@
 			if ( color.length === 3 ) {
 				color = color[0] + color[0] + color[1] + color[1] + color[2] + color[2];
 			}
-			this._color = parseInt( color, 16 );
-			return this;
+			return this.fromInt( parseInt( color, 16 ) );
 		},
 
-		fromHsl: function( h, s, l ) {
-			var r, g, b, q, p;
-			h /= 360; s /= 100; l /= 100;
+		fromHsl: function( hsl ) {
+			var r, g, b, q, p, h, s, l;
+			h = hsl.h / 360; s = hsl.s / 100; l = hsl.l / 100;
 			if ( s === 0 ) {
 				r = g = b = l; // achromatic
 			}
@@ -80,11 +87,16 @@
 				g = this.hue2rgb( p, q, h );
 				b = this.hue2rgb( p, q, h - 1/3 );
 			}
-			return this.fromRgb( r * 255, g * 255, b * 255 );
+			return this.fromRgb( {
+				r: r * 255,
+				g: g * 255,
+				b: b * 255
+			} );
 		},
 
 		fromInt: function( int ) {
 			this._color = parseInt( int, 10 );
+			// EVENT GOES HERE
 			return this;
 		},
 
@@ -126,20 +138,20 @@
 				case 'rgba':
 					var rgb = this.toRgb();
 					if ( alpha < 1 ) {
-						return "rgba( " + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ", " + alpha + " )";
+						return "rgba( " + rgb.r + ", " + rgb.g + ", " + rgb.b + ", " + alpha + " )";
 					}
 					else {
-						return "rgb( " + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + " )";
+						return "rgb( " + rgb.r + ", " + rgb.g + ", " + rgb.b + " )";
 					}
 					break;
 				case 'hsl':
 				case 'hsla':
 					var hsl = this.toHsl();
 					if ( alpha < 1 ) {
-						return "hsla( " + hsl[0] + ", " + hsl[1] + ", " + hsl[2] + ", " + alpha + " )";
+						return "hsla( " + hsl.h + ", " + hsl.s + ", " + hsl.l + ", " + alpha + " )";
 					}
 					else {
-						return "hsl( " + hsl[0] + ", " + hsl[1] + ", " + hsl[2] + " )";
+						return "hsl( " + hsl.h + ", " + hsl.s + ", " + hsl.l + " )";
 					}
 					break;
 				default:
@@ -148,16 +160,16 @@
 		},
 
 		toRgb: function() {
-			return [
-				255 & ( this._color >> 16 ),
-				255 & ( this._color >> 8 ),
-				255 & ( this._color )
-			];
+			return {
+				r: 255 & ( this._color >> 16 ),
+				g: 255 & ( this._color >> 8 ),
+				b: 255 & ( this._color )
+			};
 		},
 
 		toHsl: function() {
 			var rgb = this.toRgb();
-			var r = rgb[0] / 255, g = rgb[1] / 255, b = rgb[2] / 255;
+			var r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255;
 			var max = Math.max( r, g, b ), min = Math.min( r, g, b );
 			var h, s, l = ( max + min ) / 2;
 
@@ -177,12 +189,11 @@
 				}
 				h /= 6;
 			}
-
-			return [
-				Math.round( h * 360 ),
-				Math.round( s * 100 ),
-				Math.round( l * 100 )
-			];
+			return {
+				h: Math.round( h * 360 ),
+				s: Math.round( s * 100 ),
+				l: Math.round( l * 100 )
+			};
 		},
 
 		toInt: function() {
@@ -201,7 +212,7 @@
 
 		toLuminosity: function() {
 			var rgb = this.toRgb();
-			return 0.2126 * Math.pow( rgb[0] / 255, 2.2 ) + 0.7152 * Math.pow( rgb[1] / 255, 2.2 ) + 0.0722 * Math.pow( rgb[2] / 255, 2.2);
+			return 0.2126 * Math.pow( rgb.r / 255, 2.2 ) + 0.7152 * Math.pow( rgb.g / 255, 2.2 ) + 0.0722 * Math.pow( rgb.b / 255, 2.2);
 		},
 
 		getDistanceLuminosityFrom: function( color ) {
@@ -249,6 +260,29 @@
 			return color;
 		},
 
+		// GET / SET - to be moved into generative functions
+		h: function( val ) {
+			return this._hsl( 'h', val );
+		},
+		s: function( val ) {
+			return this._hsl( 's', val );
+		},
+		l: function( val ) {
+			return this._hsl( 'l', val );
+		},
+		_hsl: function( key, val ) {
+			var hsl = this.toHsl();
+			if ( val === undef ) {
+				return hsl[key];
+			}
+			if ( key === 'h' ) { // hue gets modded
+				hsl[key] = val % 360;
+			} else { // s & l get range'd
+				hsl[key] = ( val < 0 ) ? 0 : ( val > 100 ) ? 100 : val;
+			}
+			return this.fromHsl( hsl );
+		},
+
 		// TRANSFORMS
 
 		darken: function( amount ) {
@@ -262,17 +296,7 @@
 		},
 
 		incrementLightness: function( amount ) {
-			var hsl = this.toHsl();
-			hsl[2] += amount;
-
-			if ( hsl[2] < 0 ) {
-				hsl[2] = 0;
-			}
-			if ( hsl[2] > 100 ) {
-				hsl[2] = 100;
-			}
-
-			return this.fromHsl( hsl[0], hsl[1], hsl[2] );
+			return this.l( this.l() + amount );
 		},
 
 		saturate: function( amount ) {
@@ -286,23 +310,11 @@
 		},
 
 		incrementSaturation: function( amount ) {
-			var hsl = this.toHsl();
-			hsl[0] += amount;
-
-			if ( hsl[0] < 0 ) {
-				hsl[0] = 0;
-			}
-			if ( hsl[0] > 100 ) {
-				hsl[0] = 100;
-			}
-
-			return this.fromHsl( hsl[0], hsl[1], hsl[2] );
+			return this.s( this.s() + amount );
 		},
 
 		toGrayscale: function() {
-			var hsl = this.toHsl();
-			hsl[1] = 0;
-			return this.fromHsl( hsl[0], hsl[1], hsl[2] );
+			return this.h( 0 );
 		},
 
 		getComplement: function() {
@@ -334,12 +346,11 @@
 		},
 
 		incrementHue: function( amount ) {
-			var hsl = this.toHsl();
-			hsl[0] = ( hsl[0] + amount ) % 360;
-			return this.fromHsl( hsl[0], hsl[1], hsl[2] );
+			return this.h( this.h() + amount );
 		}
 
 	};
+
 	exports.Color = Color;
 
 }(typeof exports === 'object' && exports || this));
