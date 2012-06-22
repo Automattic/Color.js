@@ -1,4 +1,4 @@
-/*! Color.js - v0.8.2 - 2012-06-21
+/*! Color.js - v0.8.3 - 2012-06-21
 * https://github.com/Automattic/Color.js
 * Copyright (c) 2012 Matt Wiebe; Licensed GPL v2 */
 
@@ -12,6 +12,8 @@
 	Color.prototype = {
 		_color: 0,
 		_alpha: 1,
+		// for preserving hue/sat in fromHsl().toHsl() flows
+		__hsl: { h: 0, s: 0, l: 0 },
 
 		_init: function( color ) {
 			var func = 'noop';
@@ -62,8 +64,8 @@
 			}
 		},
 
-		fromRgb: function( rgb ) {
-			return this.fromInt( parseInt( ( rgb.r << 16 ) + ( rgb.g << 8 ) + rgb.b, 10 ) );
+		fromRgb: function( rgb, preserve ) {
+			return this.fromInt( parseInt( ( rgb.r << 16 ) + ( rgb.g << 8 ) + rgb.b, 10 ), preserve );
 		},
 
 		fromHex: function( color ) {
@@ -76,6 +78,7 @@
 
 		fromHsl: function( hsl ) {
 			var r, g, b, q, p, h, s, l;
+			this.__hsl = hsl; // store it
 			h = hsl.h / 360; s = hsl.s / 100; l = hsl.l / 100;
 			if ( s === 0 ) {
 				r = g = b = l; // achromatic
@@ -91,11 +94,14 @@
 				r: r * 255,
 				g: g * 255,
 				b: b * 255
-			} );
+			}, true ); // true preserves hue/sat
 		},
 
-		fromInt: function( int ) {
+		fromInt: function( int, preserve ) {
 			this._color = parseInt( int, 10 );
+			if ( preserve === undef ) {
+				this.__hsl.h = this.__hsl.s = 0;
+			}
 			// EVENT GOES HERE
 			return this;
 		},
@@ -189,9 +195,20 @@
 				}
 				h /= 6;
 			}
+
+			// maintain hue & sat if we've been manipulating things in the HSL space.
+			h = Math.round( h * 360 );
+			if ( h === 0 && this.__hsl.h !== h ) {
+				h = this.__hsl.h;
+			}
+			s = Math.round( s * 100 );
+			if ( s === 0 && this.__hsl.s ) {
+				s = this.__hsl.s;
+			}
+
 			return {
-				h: Math.round( h * 360 ),
-				s: Math.round( s * 100 ),
+				h: h,
+				s: s,
 				l: Math.round( l * 100 )
 			};
 		},
