@@ -263,7 +263,7 @@
 				return color;
 			}
 
-			var incr = ( '#000000' === color.toString() ) ? 1 : -1;
+			var incr = ( 0 === color.toInt() ) ? 1 : -1;
 
 			while ( contrast > target_contrast ) {
 				color = color.incrementLightness( incr );
@@ -271,6 +271,42 @@
 			}
 
 			return color;
+		},
+
+		getReadableContrastingColor: function( bgColor, minContrast ) {
+			if ( ! bgColor instanceof Color ) {
+				return this;
+			}
+
+			// you shouldn't use less than 5, but you might want to.
+			var targetContrast = ( minContrast === undef ) ? 5 : minContrast;
+			// working things
+			var contrast = bgColor.getDistanceLuminosityFrom( this );
+			var maxContrastColor = bgColor.getMaxContrastColor();
+			var maxContrast = maxContrastColor.getDistanceLuminosityFrom( bgColor );
+
+			// if current max contrast is less than the target contrast, we had wishful thinking.
+			// still, go max
+			if ( maxContrast <= targetContrast ) {
+				return maxContrastColor;
+			}
+			// or, we might already have sufficient contrast
+			else if ( contrast >= targetContrast ) {
+				return this;
+			}
+
+			var incr = ( 0 === maxContrastColor.toInt() ) ? -1 : 1;
+			while ( contrast < targetContrast ) {
+				this.incrementLightness( incr );
+				contrast = this.getDistanceLuminosityFrom( bgColor );
+				// infininite loop prevention: you never know.
+				if ( this._color === 0 || this._color === 16777215 ) {
+					break;
+				}
+			}
+
+			return this;
+
 		},
 
 		// GET / SET - to be moved into generative functions
