@@ -93,8 +93,8 @@
 			}, true ); // true preserves hue/sat
 		},
 
-		fromInt: function( int, preserve ) {
-			this._color = parseInt( int, 10 );
+		fromInt: function( color, preserve ) {
+			this._color = parseInt( color, 10 );
 			if ( preserve === undef ) {
 				this.__hsl.h = this.__hsl.s = 0;
 			}
