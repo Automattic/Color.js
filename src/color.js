@@ -1,8 +1,10 @@
 (function(exports, undef) {
 
 	var Color = function( color, type ) {
-		this._init( color, type );
-		return this;
+		if ( ! ( this instanceof Color ) )
+			return new Color( color, type );
+
+		return this._init( color, type );
 	};
 
 	Color.prototype = {
