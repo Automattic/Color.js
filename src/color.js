@@ -151,6 +151,8 @@
 
 		toString: function() {
 			var hex = parseInt( this._color, 10 ).toString( 16 );
+			if ( this.error )
+				return '';
 			// maybe left pad it
 			if ( hex.length < 6 ) {
 				for (var i = 6 - hex.length - 1; i >= 0; i--) {
