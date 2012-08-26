@@ -31,7 +31,7 @@ module.exports = {
 		};
 
 		for ( var hex in hexPairs ) {
-			test.equals( hexPairs[hex], new Color( hex ).toInt() );
+			test.equals( hexPairs[hex], Color( hex ).toInt() );
 		}
 		test.done();
 	},
@@ -55,8 +55,8 @@ module.exports = {
 			rgb = { r: rgb[0], g: rgb[1], b: rgb[2] };
 			desc = 'rgb(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ')';
 
-			test.equals( int, new Color( rgb ).toInt(), "from object: " + desc );
-			test.equals( int, new Color( desc ).toInt(), "from string: " + desc );
+			test.equals( int, Color( rgb ).toInt(), "from object: " + desc );
+			test.equals( int, Color( desc ).toInt(), "from string: " + desc );
 		}
 		test.done();
 	},
