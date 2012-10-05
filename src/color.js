@@ -34,6 +34,15 @@
 			return this;
 		},
 
+		clone: function() {
+			var newColor = Color( this.toInt() ),
+				copy = ['_alpha', '_hSpace', '__hsl', '__hsv', 'error'];
+			for ( var i = copy.length - 1; i >= 0; i-- ) {
+				newColor[ copy[i] ] = this[ copy[i] ];
+			};
+			return newColor;
+		},
+
 		setHSpace: function( space ) {
 			this._hSpace = ( space === 'hsv' ) ? 'hsv' : 'hsl';
 			return this;
