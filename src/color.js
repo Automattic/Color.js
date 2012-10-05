@@ -25,7 +25,8 @@
 						if ( color.a !== undef )
 							this.a( color.a );
 						func = ( color.r !== undef ) ? 'fromRgb' :
-							( color.l !== undef ) ? 'fromHsl' : func;
+							( color.l !== undef ) ? 'fromHsl' :
+							( color.v !== undef ) ? 'fromHsv' : func;
 						return this[func]( color );
 					case 'string':
 						return this.fromCSS( color );
