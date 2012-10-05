@@ -102,12 +102,13 @@
 		},
 
 		fromHsl: function( hsl ) {
+			var r, g, b, q, p, h, s, l;
+
 			if ( typeof hsl !== 'object' || hsl.h === undef || hsl.s === undef || hsl.l === undef ) {
 				this.error = true;
 				return this;
 			}
 
-			var r, g, b, q, p, h, s, l;
 			this.__hsl = hsl; // store it
 			this.hSpace = 'hsl'; // implicit
 			h = hsl.h / 360; s = hsl.s / 100; l = hsl.l / 100;
