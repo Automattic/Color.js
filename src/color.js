@@ -13,7 +13,10 @@
 		error: false,
 		// for preserving hue/sat in fromHsl().toHsl() flows
 		__hsl: { h: 0, s: 0, l: 0 },
-
+		// for preserving hue/sat in fromHsv().toHsv() flows
+		__hsv: { h: 0, s: 0, v: 0 },
+		// for setting hsl or hsv space - needed for .h() & .s() functions to function properly
+		_hSpace: 'hsl',
 		_init: function( color ) {
 			var func = 'noop';
 			switch ( typeof color ) {
@@ -28,6 +31,11 @@
 					case 'number':
 						return this.fromInt( parseInt( color, 10 ) );
 			}
+			return this;
+		},
+
+		setHSpace: function( space ) {
+			this._hSpace = ( space === 'hsv' ) ? 'hsv' : 'hsl';
 			return this;
 		},
 
@@ -92,6 +100,7 @@
 
 			var r, g, b, q, p, h, s, l;
 			this.__hsl = hsl; // store it
+			this.hSpace = 'hsl'; // implicit
 			h = hsl.h / 360; s = hsl.s / 100; l = hsl.l / 100;
 			if ( s === 0 ) {
 				r = g = b = l; // achromatic
@@ -110,6 +119,48 @@
 			}, true ); // true preserves hue/sat
 		},
 
+		fromHsv: function( hsv ) {
+			var h, s, v, r, g, b, i, f, p, q, t;
+			if ( typeof hsv !== 'object' || hsv.h === undef || hsv.s === undef || hsv.v === undef ) {
+				this.error = true;
+				return this;
+			}
+
+			h = hsv.h / 360; s = hsv.s / 100; v = hsv.v / 100;
+			i = Math.floor( h * 6 );
+			f = h * 6 - i;
+			p = v * ( 1 - s );
+			q = v * ( 1 - f * s );
+			t = v * ( 1 - ( 1 - f ) * s );
+
+			switch( i % 6 ) {
+				case 0:
+					r = v; g = t; b = p;
+					break;
+				case 1:
+					r = q; g = v; b = p;
+					break;
+				case 2:
+					r = p; g = v; b = t;
+					break;
+				case 3:
+					r = p; g = q; b = v;
+					break;
+				case 4:
+					r = t; g = p; b = v;
+					break;
+				case 5:
+					r = v; g = p; b = q;
+					break;
+			}
+
+			return this.fromRgb( {
+				r: r * 255,
+				g: g * 255,
+				b: b * 255
+			} );
+
+		},
 		// everything comes down to fromInt
 		fromInt: function( color, preserve ) {
 			this._color = parseInt( color, 10 );
@@ -236,6 +287,39 @@
 				h: h,
 				s: s,
 				l: Math.round( l * 100 )
+			};
+
+		},
+
+		toHsv: function() {
+			var rgb = this.toRgb();
+			var r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255;
+			var max = Math.max( r, g, b ), min = Math.min( r, g, b );
+			var h, s, v = max;
+			var d = max - min;
+			s = max === 0 ? 0 : d / max;
+
+			if ( max === min ) {
+				h = s = 0; // achromatic
+			} else {
+				switch( max ){
+					case r:
+						h = ( g - b ) / d + ( g < b ? 6 : 0 );
+						break;
+					case g:
+						h = ( b - r ) / d + 2;
+						break;
+					case b:
+						h = ( r - g ) / d + 4;
+						break;
+				}
+				h /= 6;
+			}
+
+			return {
+				h: Math.round( h * 360 ),
+				s: Math.round( s * 100 ),
+				v: Math.round( v * 100 )
 			};
 		},
 
