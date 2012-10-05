@@ -22,7 +22,8 @@
 			switch ( typeof color ) {
 					case 'object':
 						// alpha?
-						this._alpha = color.a || 1;
+						if ( color.a !== undef )
+							this.a( color.a );
 						func = ( color.r !== undef ) ? 'fromRgb' :
 							( color.l !== undef ) ? 'fromHsl' : func;
 						return this[func]( color );
@@ -58,7 +59,7 @@
 			if ( color.match(/^(rgb|hsl)a?/) ) {
 				list = color.replace(/(\s|%)/g, '').replace(/^(rgb|hsl)a?\(/, '').replace(/\);?$/, '').split(',');
 				if ( list.length === 4 ) {
-					this._alpha = parseFloat( list.pop() );
+					this.a( parseFloat( list.pop() ) );
 				}
 				if ( color.match(/^rgb/) ) {
 					return this.fromRgb( {
@@ -454,6 +455,11 @@
 				hsl[key] = ( val < 0 ) ? 0 : ( val > 100 ) ? 100 : val;
 			}
 			return this.fromHsl( hsl );
+		a: function( val ) {
+			if ( val === undef )
+				return this._alpha;
+			this._alpha = parseFloat( val );
+			return this;
 		},
 
 		// TRANSFORMS
