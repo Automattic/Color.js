@@ -241,10 +241,10 @@
 				case 'hsla':
 					var hsl = this.toHsl();
 					if ( alpha < 1 ) {
-						return "hsla( " + hsl.h + ", " + hsl.s + ", " + hsl.l + ", " + alpha + " )";
+						return "hsla( " + hsl.h + ", " + hsl.s + "%, " + hsl.l + "%, " + alpha + " )";
 					}
 					else {
-						return "hsl( " + hsl.h + ", " + hsl.s + ", " + hsl.l + " )";
+						return "hsl( " + hsl.h + ", " + hsl.s + "%, " + hsl.l + "% )";
 					}
 					break;
 				default:
