@@ -7,7 +7,7 @@
 		return this._init( color, type );
 	};
 
-	Color.prototype = {
+	Color.fn = Color.prototype = {
 		_color: 0,
 		_alpha: 1,
 		error: false,
@@ -269,8 +269,7 @@
 
 			if ( max === min ) {
 				h = s = 0; // achromatic
-			}
-			else {
+			} else {
 				var d = max - min;
 				s = l > 0.5 ? d / ( 2 - max - min ) : d / ( max + min );
 				switch ( max ) {
@@ -434,27 +433,6 @@
 
 		},
 
-		// GET / SET - to be moved into generative functions
-		h: function( val ) {
-			return this._hsl( 'h', val );
-		},
-		s: function( val ) {
-			return this._hsl( 's', val );
-		},
-		l: function( val ) {
-			return this._hsl( 'l', val );
-		},
-		_hsl: function( key, val ) {
-			var hsl = this.toHsl();
-			if ( val === undef ) {
-				return hsl[key];
-			}
-			if ( key === 'h' ) { // hue gets modded
-				hsl[key] = val % 360;
-			} else { // s & l get range'd
-				hsl[key] = ( val < 0 ) ? 0 : ( val > 100 ) ? 100 : val;
-			}
-			return this.fromHsl( hsl );
 		a: function( val ) {
 			if ( val === undef )
 				return this._alpha;
@@ -466,68 +444,162 @@
 
 		darken: function( amount ) {
 			amount = amount || 5;
-			return this.incrementLightness( - amount );
+			return this.l( - amount, true );
 		},
 
 		lighten: function( amount ) {
 			amount = amount || 5;
-			return this.incrementLightness( amount );
-		},
-
-		incrementLightness: function( amount ) {
-			return this.l( this.l() + amount );
+			return this.l( amount, true );
 		},
 
 		saturate: function( amount ) {
 			amount = amount || 15;
-			return this.incrementSaturation( amount );
+			return this.s( amount, true );
 		},
 
 		desaturate: function( amount ) {
 			amount = amount || 15;
-			return this.incrementSaturation( - amount );
-		},
-
-		incrementSaturation: function( amount ) {
-			return this.s( this.s() + amount );
+			return this.s( - amount, true );
 		},
 
 		toGrayscale: function() {
-			return this.h( 0 );
+			return this.setHSpace('hsl').s( 0 );
 		},
 
 		getComplement: function() {
-			return this.incrementHue( 180 );
+			return this.h( 180, true );
 		},
 
 		getSplitComplement: function( step ) {
 			step = step || 1;
 			var incr = 180 + ( step * 30 );
-			return this.incrementHue( incr );
+			return this.h( incr, true );
 		},
 
 		getAnalog: function( step ) {
 			step = step || 1;
 			var incr = step * 30;
-			return this.incrementHue( incr );
+			return this.h( incr, true );
 		},
 
 		getTetrad: function( step ) {
 			step = step || 1;
 			var incr = step * 60;
-			return this.incrementHue( incr );
+			return this.h( incr, true );
 		},
 
 		getTriad: function( step ) {
 			step = step || 1;
 			var incr = step * 120;
-			return this.incrementHue( incr );
+			return this.h( incr, true );
 		},
 
-		incrementHue: function( amount ) {
-			return this.h( this.h() + amount );
-		}
+		// GET / SET - to be moved into generative functions
+/*		h: function( val ) {
+			if ( this._hSpace === 'hsv' )
+				return this._hsv( 'h', val );
+			return this._hsl( 'h', val );
+		},
+		s: function( val ) {
+			if ( this._hSpace === 'hsv' )
+				return this._hsv( 's', val );
+			return this._hsl( 's', val );
+		},
+		l: function( val ) {
+			return this._hsl( 'l', val );
+		},
+		v: function( val ) {
+			return this._hsv( 'v', val );
+		},*/
+		_hsl: function( key, val ) {
+			var hsl = this.toHsl();
+			if ( val === undef ) {
+				return hsl[key];
+			}
+			if ( key === 'h' ) { // hue gets modded
+				hsl[key] = val % 360;
+			} else { // s & l get range'd
+				hsl[key] = ( val < 0 ) ? 0 : ( val > 100 ) ? 100 : val;
+			}
+			return this.fromHsl( hsl );
+		},
+		_hsv: function( key, val ) {
+			var hsv = this.toHsv();
+			if ( val === undef ) {
+				return hsv[key];
+			}
+			if ( key === 'h' ) { // hue gets modded
+				hsv[key] = val % 360;
+			} else { // s & v get range'd
+				hsv[key] = ( val < 0 ) ? 0 : ( val > 100 ) ? 100 : val;
+			}
+			return this.fromHsv( hsv );
+		},
+		_partial: function( key ) {
+			var prop = shortProps[key];
+			return function( val, incr ) {
+				var color = this._spaceFunc('to', prop.space);
 
+				// GETTER
+				if ( val === undef )
+					return color[key];
+
+				// INCREMENT
+				if ( incr === true )
+					val = color[key] + val;
+
+				// MOD & RANGE
+				if ( prop.mod )
+					val = val % prop.mod;
+				if ( prop.range )
+					val = ( val < prop.range[0] ) ? prop.range[0] : ( val > prop.range[1] ) ? prop.range[1] : val;
+
+				// NEW VALUE
+				color[key] = val;
+
+				return this._spaceFunc('from', prop.space, color);
+			}
+		},
+
+		_spaceFunc: function( dir, s, val ) {
+			var space = s || this._hSpace,
+				funcName = dir + space.charAt(0).toUpperCase() + space.substr(1);
+			return this[funcName](val);
+		}
+	};
+
+	var shortProps = {
+		h: {
+			mod: 360
+		},
+		s: {
+			range: [0,100]
+		},
+		l: {
+			space: 'hsl',
+			range: [0,100]
+		},
+		v: {
+			space: 'hsv',
+			range: [0,100]
+		},
+		r: {
+			space: 'rgb',
+			range: [0,255]
+		},
+		g: {
+			space: 'rgb',
+			range: [0,255]
+		},
+		b: {
+			space: 'rgb',
+			range: [0,255]
+		}
+	};
+
+	for ( var key in shortProps ) {
+		if ( shortProps.hasOwnProperty( key ) )
+			Color.fn[key] = Color.fn._partial(key);
 	};
 
 	exports.Color = Color;
