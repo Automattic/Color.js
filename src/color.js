@@ -36,11 +36,11 @@
 		},
 
 		clone: function() {
-			var newColor = Color( this.toInt() ),
+			var newColor = new Color( this.toInt() ),
 				copy = ['_alpha', '_hSpace', '__hsl', '__hsv', 'error'];
 			for ( var i = copy.length - 1; i >= 0; i-- ) {
 				newColor[ copy[i] ] = this[ copy[i] ];
-			};
+			}
 			return newColor;
 		},
 
@@ -558,7 +558,7 @@
 				color[key] = val;
 
 				return this._spaceFunc('from', prop.space, color);
-			}
+			};
 		},
 
 		_spaceFunc: function( dir, s, val ) {
@@ -600,7 +600,7 @@
 	for ( var key in shortProps ) {
 		if ( shortProps.hasOwnProperty( key ) )
 			Color.fn[key] = Color.fn._partial(key);
-	};
+	}
 
 	exports.Color = Color;
 
