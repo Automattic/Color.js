@@ -12,9 +12,9 @@
 		_alpha: 1,
 		error: false,
 		// for preserving hue/sat in fromHsl().toHsl() flows
-		__hsl: { h: 0, s: 0, l: 0 },
+		_hsl: { h: 0, s: 0, l: 0 },
 		// for preserving hue/sat in fromHsv().toHsv() flows
-		__hsv: { h: 0, s: 0, v: 0 },
+		_hsv: { h: 0, s: 0, v: 0 },
 		// for setting hsl or hsv space - needed for .h() & .s() functions to function properly
 		_hSpace: 'hsl',
 		_init: function( color ) {
@@ -38,7 +38,7 @@
 
 		clone: function() {
 			var newColor = new Color( this.toInt() ),
-				copy = ['_alpha', '_hSpace', '__hsl', '__hsv', 'error'];
+				copy = ['_alpha', '_hSpace', '_hsl', '_hsv', 'error'];
 			for ( var i = copy.length - 1; i >= 0; i-- ) {
 				newColor[ copy[i] ] = this[ copy[i] ];
 			}
@@ -111,8 +111,8 @@
 				return this;
 			}
 
-			this.__hsl = hsl; // store it
-			this.hSpace = 'hsl'; // implicit
+			this._hsl = hsl; // store it
+			this._hSpace = 'hsl'; // implicit
 			h = hsl.h / 360; s = hsl.s / 100; l = hsl.l / 100;
 			if ( s === 0 ) {
 				r = g = b = l; // achromatic
@@ -137,6 +137,9 @@
 				this.error = true;
 				return this;
 			}
+
+			this._hsv = hsv; // store it
+			this._hSpace = 'hsv'; // implicit
 
 			h = hsv.h / 360; s = hsv.s / 100; v = hsv.v / 100;
 			i = Math.floor( h * 6 );
@@ -170,7 +173,7 @@
 				r: r * 255,
 				g: g * 255,
 				b: b * 255
-			} );
+			}, true ); // true preserves hue/sat
 
 		},
 		// everything comes down to fromInt
@@ -186,8 +189,9 @@
 			else if ( this._color < 0 )
 				this._color = 0;
 
+			// let's not do weird things
 			if ( preserve === undef ) {
-				this.__hsl.h = this.__hsl.s = 0;
+				this._hsv.h = this._hsv.s = this._hsl.h = this._hsl.s = 0;
 			}
 			// EVENT GOES HERE
 			return this;
@@ -286,12 +290,12 @@
 
 			// maintain hue & sat if we've been manipulating things in the HSL space.
 			h = Math.round( h * 360 );
-			if ( h === 0 && this.__hsl.h !== h ) {
-				h = this.__hsl.h;
+			if ( h === 0 && this._hsl.h !== h ) {
+				h = this._hsl.h;
 			}
 			s = Math.round( s * 100 );
-			if ( s === 0 && this.__hsl.s ) {
-				s = this.__hsl.s;
+			if ( s === 0 && this._hsl.s ) {
+				s = this._hsl.s;
 			}
 
 			return {
@@ -327,9 +331,19 @@
 				h /= 6;
 			}
 
+			// maintain hue & sat if we've been manipulating things in the HSV space.
+			h = Math.round( h * 360 );
+			if ( h === 0 && this._hsv.h !== h ) {
+				h = this._hsv.h;
+			}
+			s = Math.round( s * 100 );
+			if ( s === 0 && this._hsv.s ) {
+				s = this._hsv.s;
+			}
+
 			return {
-				h: Math.round( h * 360 ),
-				s: Math.round( s * 100 ),
+				h: h,
+				s: s,
 				v: Math.round( v * 100 )
 			};
 		},
@@ -495,47 +509,6 @@
 			return this.h( incr, true );
 		},
 
-		// GET / SET - to be moved into generative functions
-/*		h: function( val ) {
-			if ( this._hSpace === 'hsv' )
-				return this._hsv( 'h', val );
-			return this._hsl( 'h', val );
-		},
-		s: function( val ) {
-			if ( this._hSpace === 'hsv' )
-				return this._hsv( 's', val );
-			return this._hsl( 's', val );
-		},
-		l: function( val ) {
-			return this._hsl( 'l', val );
-		},
-		v: function( val ) {
-			return this._hsv( 'v', val );
-		},*/
-		_hsl: function( key, val ) {
-			var hsl = this.toHsl();
-			if ( val === undef ) {
-				return hsl[key];
-			}
-			if ( key === 'h' ) { // hue gets modded
-				hsl[key] = val % 360;
-			} else { // s & l get range'd
-				hsl[key] = ( val < 0 ) ? 0 : ( val > 100 ) ? 100 : val;
-			}
-			return this.fromHsl( hsl );
-		},
-		_hsv: function( key, val ) {
-			var hsv = this.toHsv();
-			if ( val === undef ) {
-				return hsv[key];
-			}
-			if ( key === 'h' ) { // hue gets modded
-				hsv[key] = val % 360;
-			} else { // s & v get range'd
-				hsv[key] = ( val < 0 ) ? 0 : ( val > 100 ) ? 100 : val;
-			}
-			return this.fromHsv( hsv );
-		},
 		_partial: function( key ) {
 			var prop = shortProps[key];
 			return function( val, incr ) {
