@@ -36,6 +36,11 @@
 			return this;
 		},
 
+		_error: function() {
+			this.error = true;
+			return this;
+		},
+
 		clone: function() {
 			var newColor = new Color( this.toInt() ),
 				copy = ['_alpha', '_hSpace', '_hsl', '_hsv', 'error'];
@@ -84,10 +89,9 @@
 		},
 
 		fromRgb: function( rgb, preserve ) {
-			if ( typeof rgb !== 'object' || rgb.r === undef || rgb.g === undef || rgb.b === undef ) {
-				this.error = true;
-				return this;
-			}
+			if ( typeof rgb !== 'object' || rgb.r === undef || rgb.g === undef || rgb.b === undef )
+				return this._error();
+
 			this.error = false;
 			return this.fromInt( parseInt( ( rgb.r << 16 ) + ( rgb.g << 8 ) + rgb.b, 10 ), preserve );
 		},
@@ -106,10 +110,8 @@
 		fromHsl: function( hsl ) {
 			var r, g, b, q, p, h, s, l;
 
-			if ( typeof hsl !== 'object' || hsl.h === undef || hsl.s === undef || hsl.l === undef ) {
-				this.error = true;
-				return this;
-			}
+			if ( typeof hsl !== 'object' || hsl.h === undef || hsl.s === undef || hsl.l === undef )
+				return this._error();
 
 			this._hsl = hsl; // store it
 			this._hSpace = 'hsl'; // implicit
@@ -133,10 +135,8 @@
 
 		fromHsv: function( hsv ) {
 			var h, s, v, r, g, b, i, f, p, q, t;
-			if ( typeof hsv !== 'object' || hsv.h === undef || hsv.s === undef || hsv.v === undef ) {
-				this.error = true;
-				return this;
-			}
+			if ( typeof hsv !== 'object' || hsv.h === undef || hsv.s === undef || hsv.v === undef )
+				return this._error();
 
 			this._hsv = hsv; // store it
 			this._hSpace = 'hsv'; // implicit
@@ -451,7 +451,13 @@
 		a: function( val ) {
 			if ( val === undef )
 				return this._alpha;
-			this._alpha = parseFloat( val );
+
+			var a = parseFloat( val );
+
+			if ( isNaN( a ) )
+				return this._error();
+
+			this._alpha = a;
 			return this;
 		},
 
