@@ -51,7 +51,7 @@
 		},
 
 		setHSpace: function( space ) {
-			this._hSpace = ( space === 'hsv' ) ? 'hsv' : 'hsl';
+			this._hSpace = ( space === 'hsv' ) ? space : 'hsl';
 			return this;
 		},
 
