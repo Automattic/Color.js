@@ -1,16 +1,3 @@
-
-Array.prototype.compareArrays = function(arr) {
-	if (this.length != arr.length) return false;
-	for (var i = 0; i < arr.length; i++) {
-		if (this[i].compareArrays) { //likely nested array
-			if (!this[i].compareArrays(arr[i])) return false;
-			else continue;
-		}
-		if (this[i] !== arr[i]) return false;
-	}
-	return true;
-}
-
 module.exports = {
 	setUp: function (callback) {
 		Color = require( '../src/color.js' ).Color;
@@ -33,8 +20,57 @@ module.exports = {
 		for ( var hex in hexPairs ) {
 			test.equals( hexPairs[hex], Color( hex ).toInt() );
 		}
+
 		test.done();
 	},
+	fromCssErrors: function( test ) {
+		var badParseStrings = [
+			'hsl',
+			'hsv',
+			'rgb',
+			'hslv',
+			'hsl(',
+			'hsv(',
+			'rgb(',
+			'hsl()',
+			'hsv()',
+			'rgb()',
+			'hsl(a)',
+			'hsl(10,a)',
+			'hsl(a,10)',
+			'hsl(10,10)',
+			'hsl(10,10,)',
+			'hsl(10,10,a)',
+			'hsl(10,a,10)',
+			'hsl(a,10,10)',
+			'hsla(10,10,10,a)',
+			'hsl(10,10,10'
+		];
+
+		badParseStrings.forEach(function(string){
+			var color = new Color(string);
+			test.equals( color.error, true, string + ' should produce an error' );
+		});
+
+		test.done();
+	},
+
+	fromCssParse: function( test ) {
+		var goodParseStrings = [
+			'rgb(255,0,127)',
+			'rgb(255,0,127);',
+			'hsl(350,10%,10%)',
+			'hsl(350,10,10)',
+			'hsv(120,10,10)'
+		];
+
+		goodParseStrings.forEach(function(string){
+			test.equals( Color(string).error, false, string + ' should not produce an error' );
+		});
+
+		test.done();
+	},
+
 	fromRgb: function( test ) {
 		var rgbPairs = {
 			0: [ 0, 0, 0 ],
@@ -58,6 +94,7 @@ module.exports = {
 			test.equals( int, Color( rgb ).toInt(), "from object: " + desc );
 			test.equals( int, Color( desc ).toInt(), "from string: " + desc );
 		}
+
 		test.done();
 	},
 	fromInt: function( test ) {
@@ -71,6 +108,7 @@ module.exports = {
 		for ( var int in intPairs ) {
 			test.equals( color.fromInt( int ).toInt(), intPairs[int] );
 		}
+
 		test.done();
 	}
 };

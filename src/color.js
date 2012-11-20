@@ -60,29 +60,52 @@
 		},
 
 		fromCSS: function( color ) {
-			var nums, list;
+			var nums, list,
+				leadingRE = /^(rgb|hs(l|v))a?\(/;
 			this.error = false;
-			if ( color.match(/^(rgb|hsl)a?/) ) {
-				list = color.replace(/(\s|%)/g, '').replace(/^(rgb|hsl)a?\(/, '').replace(/\);?$/, '').split(',');
+
+			// whitespace and semicolon trim
+			color = color.replace(/^\s+/, '').replace(/\s+$/, '').replace(/;$/, '');
+
+			if ( color.match(leadingRE) && color.match(/\)$/) ) {
+				list = color.replace(/(\s|%)/g, '').replace(leadingRE, '').replace(/,?\);?$/, '').split(',');
+
+				if ( list.length < 3 )
+					return this._error();
+
 				if ( list.length === 4 ) {
 					this.a( parseFloat( list.pop() ) );
+					// error state has been set to true in .a() if we passed NaN
+					if ( this.error )
+						return this;
 				}
+
+				for (var i = list.length - 1; i >= 0; i--) {
+					list[i] = parseInt(list[i], 10);
+					if ( isNaN( list[i] ) )
+						return this._error();
+				}
+
 				if ( color.match(/^rgb/) ) {
 					return this.fromRgb( {
-						r: parseInt(list[0], 10),
-						g: parseInt(list[1], 10),
-						b: parseInt(list[2], 10)
+						r: list[0],
+						g: list[1],
+						b: list[2]
 					} );
-				}
-				else {
+				} else if ( color.match(/^hsv/) ) {
+					return this.fromHsv( {
+						h: list[0],
+						s: list[1],
+						v: list[2]
+					} );
+				} else {
 					return this.fromHsl( {
-						h: parseInt(list[0], 10),
-						s: parseInt(list[1], 10),
-						l: parseInt(list[2], 10)
+						h: list[0],
+						s: list[1],
+						l: list[2]
 					} );
 				}
-			}
-			else {
+			} else {
 				// must be hex amirite?
 				return this.fromHex( color );
 			}
