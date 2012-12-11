@@ -410,31 +410,6 @@
 			return new Color( hex );
 		},
 
-		getGrayscaleContrastingColor: function( contrast ) {
-			if ( ! contrast ) {
-				return this.getMaxContrastColor();
-			}
-
-			// don't allow less than 5
-			var target_contrast = ( contrast < 5 ) ? 5 : contrast;
-			var color = this.getMaxContrastColor();
-			contrast = color.getDistanceLuminosityFrom( this );
-
-			// if current max contrast is less than the target contrast, we had wishful thinking.
-			if ( contrast <= target_contrast ) {
-				return color;
-			}
-
-			var incr = ( 0 === color.toInt() ) ? 1 : -1;
-
-			while ( contrast > target_contrast ) {
-				color = color.incrementLightness( incr );
-				contrast = color.getDistanceLuminosityFrom( this );
-			}
-
-			return color;
-		},
-
 		getReadableContrastingColor: function( bgColor, minContrast ) {
 			if ( ! bgColor instanceof Color ) {
 				return this;
