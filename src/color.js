@@ -459,7 +459,7 @@
 
 			var incr = ( 0 === maxContrastColor.toInt() ) ? -1 : 1;
 			while ( contrast < targetContrast ) {
-				this.incrementLightness( incr );
+				this.l( incr, true ); // 2nd arg turns this into an incrementer
 				contrast = this.getDistanceLuminosityFrom( bgColor );
 				// infininite loop prevention: you never know.
 				if ( this._color === 0 || this._color === 16777215 ) {
