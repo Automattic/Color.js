@@ -2,7 +2,7 @@
   "name": "color",
   "title": "Color.js",
   "description": "A color manipulation and transformation library",
-  "version": "0.9.10",
+  "version": "0.9.11",
   "homepage": "https://github.com/Automattic/Color.js",
   "docs": "http://automattic.github.com/Color.js/",
   "bugs": "https://github.com/Automattic/Color.js/issues",

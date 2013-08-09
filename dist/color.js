@@ -1,8 +1,7 @@
-/*! Color.js - v0.9.10 - 2012-12-10
+/*! Color.js - v0.9.11 - 2013-08-09
 * https://github.com/Automattic/Color.js
-* Copyright (c) 2012 Matt Wiebe; Licensed GPL v2 */
-
-(function(exports, undef) {
+* Copyright (c) 2013 Matt Wiebe; Licensed GPLv2 */
+(function(global, undef) {
 
 	var Color = function( color, type ) {
 		if ( ! ( this instanceof Color ) )
@@ -64,7 +63,7 @@
 		},
 
 		fromCSS: function( color ) {
-			var nums, list,
+			var list,
 				leadingRE = /^(rgb|hs(l|v))a?\(/;
 			this.error = false;
 
@@ -584,6 +583,10 @@
 			Color.fn[key] = Color.fn._partial(key);
 	}
 
-	exports.Color = Color;
+	// play nicely with Node + browser
+	if ( typeof exports === 'object' )
+		module.exports = Color;
+	else
+		global.Color = Color;
 
-}(typeof exports === 'object' && exports || this));
+}(this));
