@@ -1,4 +1,4 @@
-(function(exports, undef) {
+(function(global, undef) {
 
 	var Color = function( color, type ) {
 		if ( ! ( this instanceof Color ) )
@@ -60,7 +60,7 @@
 		},
 
 		fromCSS: function( color ) {
-			var nums, list,
+			var list,
 				leadingRE = /^(rgb|hs(l|v))a?\(/;
 			this.error = false;
 
@@ -580,6 +580,10 @@
 			Color.fn[key] = Color.fn._partial(key);
 	}
 
-	exports.Color = Color;
+	// play nicely with Node + browser
+	if ( typeof exports === 'object' )
+		module.exports = Color;
+	else
+		global.Color = Color;
 
-}(typeof exports === 'object' && exports || this));
+}(this));

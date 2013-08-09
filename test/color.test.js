@@ -1,6 +1,6 @@
 module.exports = {
 	setUp: function (callback) {
-		Color = require( '../src/color.js' ).Color;
+		Color = require( '../src/color.js' );
 		callback();
 	},
 	tearDown: function (callback) {
