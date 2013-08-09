@@ -1,0 +1,35 @@
+{
+  "name": "color",
+  "title": "Color.js",
+  "description": "A color manipulation and transformation library",
+  "version": "0.9.10",
+  "homepage": "https://github.com/Automattic/Color.js",
+  "docs": "http://automattic.github.com/Color.js/",
+  "bugs": "https://github.com/Automattic/Color.js/issues",
+  "author": {
+    "name": "Matt Wiebe",
+    "email": "wiebe@automattic.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Automattic/Color.js.git"
+  },
+  "licenses": [
+    {
+      "type": "GPLv2",
+      "url": "https://github.com/Automattic/Iris/blob/master/LICENSE"
+    }
+  ],
+  "keywords": ["ui", "color", "colorpicker", "widget"],
+  "scripts": {
+    "test": "grunt nodeunit"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-uglify": "~0.2.2",
+    "grunt-contrib-watch": "~0.5.1",
+    "grunt-contrib-nodeunit": "~0.2.0",
+    "grunt-contrib-jshint": "~0.6.2",
+    "grunt-contrib-concat": "~0.3.0"
+  }
+}
