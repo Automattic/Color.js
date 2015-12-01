@@ -405,8 +405,9 @@
 		},
 
 		getMaxContrastColor: function() {
-			var lum = this.toLuminosity();
-			var hex = ( lum >= 0.5 ) ? '000000' : 'ffffff';
+			var withBlack = this.getDistanceLuminosityFrom( new Color( '#000' ) );
+			var withWhite = this.getDistanceLuminosityFrom( new Color( '#fff' ) );
+			var hex = ( withBlack >= withWhite ) ? '#000' : '#fff';
 			return new Color( hex );
 		},
 
