@@ -1,6 +1,6 @@
-/*! Color.js - v0.9.11 - 2013-08-09
+/*! Color.js - v1.0 - 2015-12-01
 * https://github.com/Automattic/Color.js
-* Copyright (c) 2013 Matt Wiebe; Licensed GPLv2 */
+* Copyright (c) 2015 Matt Wiebe; Licensed GPLv2 */
 (function(global, undef) {
 
 	var Color = function( color, type ) {
@@ -408,8 +408,9 @@
 		},
 
 		getMaxContrastColor: function() {
-			var lum = this.toLuminosity();
-			var hex = ( lum >= 0.5 ) ? '000000' : 'ffffff';
+			var withBlack = this.getDistanceLuminosityFrom( new Color( '#000' ) );
+			var withWhite = this.getDistanceLuminosityFrom( new Color( '#fff' ) );
+			var hex = ( withBlack >= withWhite ) ? '#000' : '#fff';
 			return new Color( hex );
 		},
 
