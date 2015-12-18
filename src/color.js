@@ -412,28 +412,31 @@
 		},
 
 		getReadableContrastingColor: function( bgColor, minContrast ) {
-			if ( ! bgColor instanceof Color ) {
+			if ( ! ( bgColor instanceof Color ) ) {
 				return this;
 			}
 
 			// you shouldn't use less than 5, but you might want to.
-			var targetContrast = ( minContrast === undef ) ? 5 : minContrast;
-			// working things
-			var contrast = bgColor.getDistanceLuminosityFrom( this );
-			var maxContrastColor = bgColor.getMaxContrastColor();
-			var maxContrast = maxContrastColor.getDistanceLuminosityFrom( bgColor );
+			var targetContrast = ( minContrast === undef ) ? 5 : minContrast,
+				contrast = bgColor.getDistanceLuminosityFrom( this ),
+				maxContrastColor, maxContrast, incr;
+
+			// if we have sufficient contrast already, cool
+			if ( contrast >= targetContrast ) {
+				return this;
+			}
+
+
+			maxContrastColor = bgColor.getMaxContrastColor();
+			maxContrast = maxContrastColor.getDistanceLuminosityFrom( bgColor );
 
 			// if current max contrast is less than the target contrast, we had wishful thinking.
 			// still, go max
 			if ( maxContrast <= targetContrast ) {
 				return maxContrastColor;
 			}
-			// or, we might already have sufficient contrast
-			else if ( contrast >= targetContrast ) {
-				return this;
-			}
 
-			var incr = ( 0 === maxContrastColor.toInt() ) ? -1 : 1;
+			incr = ( 0 === maxContrastColor.toInt() ) ? -1 : 1;
 			while ( contrast < targetContrast ) {
 				this.l( incr, true ); // 2nd arg turns this into an incrementer
 				contrast = this.getDistanceLuminosityFrom( bgColor );
@@ -444,7 +447,6 @@
 			}
 
 			return this;
-
 		},
 
 		a: function( val ) {
