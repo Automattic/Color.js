@@ -385,11 +385,22 @@
 			return '#' + AA + hex.replace(/^#/, '' );
 		},
 
+		// http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef
 		toLuminosity: function() {
 			var rgb = this.toRgb();
-			return 0.2126 * Math.pow( rgb.r / 255, 2.2 ) + 0.7152 * Math.pow( rgb.g / 255, 2.2 ) + 0.0722 * Math.pow( rgb.b / 255, 2.2);
+			var lum = {};
+			for ( var i in rgb ) {
+				if ( ! rgb.hasOwnProperty( i ) ) {
+					continue;
+				}
+				var chan = rgb[ i ] / 255;
+				lum[ i ] = ( chan <= 0.03928 ) ? chan / 12.92 : Math.pow( ( ( chan + 0.055 ) / 1.055 ), 2.4 );
+			}
+
+			return 0.2126 * lum.r + 0.7152 * lum.g + 0.0722 * lum.b;
 		},
 
+		// http://www.w3.org/TR/2008/REC-WCAG20-20081211/#contrast-ratiodef
 		getDistanceLuminosityFrom: function( color ) {
 			if ( ! ( color instanceof Color ) ) {
 				throw 'getDistanceLuminosityFrom requires a Color object';
